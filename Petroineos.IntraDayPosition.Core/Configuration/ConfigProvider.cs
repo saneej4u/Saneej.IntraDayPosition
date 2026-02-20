@@ -2,7 +2,6 @@
 
 namespace Petroineos.IntraDayPosition.Core.Configuration
 {
-
     public class ConfigProvider : IConfigProvider
     {
         private readonly IConfiguration _configuration;

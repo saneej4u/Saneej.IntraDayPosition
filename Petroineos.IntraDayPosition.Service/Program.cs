@@ -2,24 +2,47 @@ using Petroineos.IntraDayPosition.Core.Configuration;
 using Petroineos.IntraDayPosition.Core.Service;
 using Petroineos.IntraDayPosition.Core.Storage;
 using Petroineos.IntraDayPosition.Service;
+using Serilog;
 using Services;
 
-var builder = Host.CreateApplicationBuilder(args);
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build();
 
-builder.Services.AddWindowsService(options =>
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
+
+try
 {
-    options.ServiceName = "Petroineos IntraDay Position Service";
-});
+    Log.Information("Starting up the Petroineos IntraDay Position Service");
+    var builder = Host.CreateApplicationBuilder(args);
 
+    builder.Services.AddSerilog();
 
-builder.Services.AddSingleton<IConfigProvider, ConfigProvider>();
-builder.Services.AddTransient<ICsvGenerator, CsvGenerator>();
+    builder.Services.AddWindowsService(options =>
+    {
+        options.ServiceName = "Petroineos IntraDay Position Service";
+    });
 
-builder.Services.AddSingleton<IPowerService, PowerService>();
+    builder.Services.AddSingleton<IConfigProvider, ConfigProvider>();
+    builder.Services.AddTransient<ICsvGenerator, CsvGenerator>();
 
-builder.Services.AddTransient<IPositionService, PositionService>();
+    builder.Services.AddSingleton<IPowerService, PowerService>();
 
-builder.Services.AddHostedService<Worker>();
+    builder.Services.AddTransient<IPositionService, PositionService>();
 
-var host = builder.Build();
-host.Run();
+    builder.Services.AddHostedService<Worker>();
+
+    var host = builder.Build();
+    host.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Service terminated unexpectedly.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
