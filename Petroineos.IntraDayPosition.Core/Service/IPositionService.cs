@@ -1,6 +1,6 @@
 ﻿namespace Petroineos.IntraDayPosition.Core.Service
 {
-    internal interface IPositionService
+    public interface IPositionService
     {
         Task ProcessPositionsAsync(DateTime runtime, string outputPath);
     }

@@ -20,29 +20,33 @@ namespace Petroineos.IntraDayPosition.Core.Service
 
         public async Task ProcessPositionsAsync(DateTime runtime, string outputPath)
         {
+            _logger.LogInformation("Retrieving trades for {runtime}", runtime);
             var trades = await _tradingSystem.GetTradesAsync(runtime);
-            var hourlyAggregates = Aggregate(trades);
+            
+            var tradesList = trades?.ToList() ?? new List<Services.PowerTrade>();
+            _logger.LogInformation("Retrieved {count} trades.", tradesList.Count);
+
+            var hourlyAggregates = Aggregate(tradesList);
+            _logger.LogInformation("Aggregated trades into {count} hourly periods. Generating CSV...", hourlyAggregates.Count());
+
             _csvGenerator.Generate(hourlyAggregates, runtime, outputPath);
+            _logger.LogInformation("CSV Generation completed.");
         }
 
         internal IEnumerable<HourlyPosition> Aggregate(IEnumerable<Services.PowerTrade> trades)
         {
-            var volumes = new double[24];
+             var volumes = trades.SelectMany(t => t.Periods)
+                                 .GroupBy(p => p.Period)
+                                 .ToDictionary(g => g.Key, g => g.Sum(p => p.Volume));
 
-            foreach (var trade in trades)
-            {
-                foreach (var period in trade.Periods)
-                {
-                    if (period.Period >= 1 && period.Period <= 24)
-                        volumes[period.Period - 1] += period.Volume;
-                }
-            }
+             var numPeriods = volumes.Keys.Any() ? Math.Max(24, volumes.Keys.Max()) : 24;
 
-            return volumes.Select((vol, index) =>
-            {
-                var hour = (index + 23) % 24;
-                return new HourlyPosition($"{hour:D2}:00", vol);
-            });
+             for (int i = 1; i <= numPeriods; i++)
+             {
+                 var vol = volumes.TryGetValue(i, out var v) ? v : 0.0;
+                 var hour = (i + 22) % 24;
+                 yield return new HourlyPosition($"{hour:D2}:00", vol);
+             }
         }
     }
 }

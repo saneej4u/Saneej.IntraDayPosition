@@ -10,6 +10,8 @@ namespace Petroineos.IntraDayPosition.Core.Storage
             string fileName = $"PowerPosition_{extractTime:yyyyMMdd_HHmm}.csv";
             string fullPath = Path.Combine(folderPath, fileName);
 
+            Directory.CreateDirectory(folderPath);
+
             var csv = new StringBuilder();
             csv.AppendLine("Local Time,Volume");
 
