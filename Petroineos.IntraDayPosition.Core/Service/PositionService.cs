@@ -25,7 +25,7 @@ namespace Petroineos.IntraDayPosition.Core.Service
             _csvGenerator.Generate(hourlyAggregates, runtime, outputPath);
         }
 
-        private IEnumerable<HourlyPosition> Aggregate(IEnumerable<Services.PowerTrade> trades)
+        internal IEnumerable<HourlyPosition> Aggregate(IEnumerable<Services.PowerTrade> trades)
         {
             var volumes = new double[24];
 

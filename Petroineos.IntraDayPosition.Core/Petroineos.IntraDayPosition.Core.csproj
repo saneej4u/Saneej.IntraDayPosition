@@ -10,10 +10,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.3" />
   </ItemGroup>
-
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Petroineos.IntraDayPosition.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="PowerService">
-      <HintPath>..\..\..\Users\fathi\Downloads\PetroineosCodingChallenge-main\PetroineosCodingChallenge-main\PowerService.dll</HintPath>
+      <HintPath>ExternalLib\PowerService.dll</HintPath>
     </Reference>
   </ItemGroup>
 
